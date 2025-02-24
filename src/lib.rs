@@ -68,9 +68,11 @@ use std::path::Path;
 
 pub mod node;
 pub mod parser;
+pub mod xml_svg;
 
 pub use crate::node::Node;
 pub use crate::parser::Parser;
+pub use xml_svg::XMLSvg;
 
 /// A document.
 pub type Document = node::element::SVG;

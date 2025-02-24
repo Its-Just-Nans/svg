@@ -1,0 +1,123 @@
+use core::fmt;
+
+use crate::{
+    node::element::{tag::Type, Element},
+    parser::{Error, Event},
+    Node, Parser,
+};
+
+pub struct XMLSvg {
+    inner: Vec<Box<dyn Node>>,
+}
+
+impl XMLSvg {
+    pub fn from_childrens(childrens: &Vec<Box<dyn Node>>) -> Self {
+        Self {
+            inner: childrens.to_vec(),
+        }
+    }
+
+    pub fn from_string(svg_str: &str) -> Result<Self, Error> {
+        let svg = Element::new("document");
+        let mut stack: Vec<Element> = Vec::new();
+        stack.push(svg.clone());
+
+        for event in Parser::new(svg_str) {
+            match event {
+                Event::Tag(tag, typed, attributes) => {
+                    let mut node = Element::new(tag);
+                    node.get_attributes_mut().extend(attributes);
+                    println!("tag: {} {:#?}", tag, typed);
+                    match typed {
+                        Type::Start => {
+                            stack.push(node);
+                        }
+                        Type::End => {
+                            if stack.len() > 1 {
+                                let to_add = stack.pop().unwrap();
+                                if let Some(parent) = stack.last_mut() {
+                                    parent.append(to_add);
+                                }
+                            }
+                        }
+                        Type::Empty => {
+                            if let Some(parent) = stack.last_mut() {
+                                parent.append(node);
+                            }
+                        }
+                    }
+                }
+                Event::Comment(comment) => {
+                    println!("comment: {}", comment);
+                    // remove 4 first chart and 3 last chart
+                    let comment = &comment[4..comment.len() - 3];
+                    if let Some(parent) = stack.last_mut() {
+                        parent.append(crate::node::Comment::new(comment));
+                    }
+                }
+                Event::Text(text) => {
+                    if let Some(parent) = stack.last_mut() {
+                        parent.append(crate::node::Text::new(text));
+                    }
+                }
+                Event::Error(e) => {
+                    return Err(e);
+                }
+                Event::Declaration(declaration) => {
+                    println!("declaration: {}", declaration);
+                    if let Some(parent) = stack.last_mut() {
+                        parent.append(crate::node::Blob::new(declaration));
+                    }
+                }
+                Event::Instruction(instruction) => {
+                    println!("instruction: {}", instruction);
+                    if let Some(parent) = stack.last_mut() {
+                        parent.append(crate::node::Blob::new(instruction));
+                    }
+                }
+            }
+        }
+
+        if let Some(root) = stack.first() {
+            return Ok(XMLSvg::from_childrens(root.get_children()));
+        }
+
+        Err(Error::new((0, 0), "No root element found"))
+    }
+
+    pub fn get_svg(&self) -> Option<&dyn Node> {
+        self.inner.iter().find_map(|node| {
+            if node.get_name() == "svg" {
+                Some(node.as_ref())
+            } else {
+                None
+            }
+        })
+    }
+}
+
+impl fmt::Display for XMLSvg {
+    #[inline]
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        for node in &self.inner {
+            node.fmt(formatter)?;
+            writeln!(formatter)?;
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::XMLSvg;
+
+    #[test]
+
+    fn high_level_parsing() {
+        let svg = include_str!("../tests/fixtures/benton.svg");
+        let svg = svg.replace("\r\n", "\n");
+        let xml_svg = XMLSvg::from_string(&svg).unwrap();
+        assert_eq!(xml_svg.to_string()[..60], svg[..60]);
+        assert_eq!(xml_svg.get_svg().unwrap().get_name(), "svg")
+    }
+}

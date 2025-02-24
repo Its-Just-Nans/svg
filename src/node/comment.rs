@@ -26,7 +26,7 @@ impl Comment {
 impl fmt::Display for Comment {
     #[inline]
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        write!(formatter, "<!-- {} -->", self.content)
+        write!(formatter, "<!--{}-->", self.content)
     }
 }
 
@@ -65,10 +65,10 @@ mod tests {
 
     #[test]
     fn comment_display() {
-        let comment = Comment::new("valid");
+        let comment = Comment::new(" valid ");
         assert_eq!(comment.to_string(), "<!-- valid -->");
 
-        let comment = Comment::new("invalid -->");
+        let comment = Comment::new(" invalid --> ");
         assert_eq!(comment.to_string(), "<!-- invalid --> -->");
     }
 }
