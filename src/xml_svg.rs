@@ -49,7 +49,6 @@ impl XMLSvg {
                 }
                 Event::Comment(comment) => {
                     // remove 4 first chart and 3 last chart
-                    let comment = &comment[4..comment.len() - 3];
                     if let Some(parent) = stack.last_mut() {
                         parent.append(crate::node::Comment::new(comment));
                     }

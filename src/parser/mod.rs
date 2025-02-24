@@ -77,7 +77,10 @@ impl<'l> Parser<'l> {
     fn read_comment(&mut self) -> Option<Event<'l>> {
         match self.reader.capture(|reader| reader.consume_comment()) {
             None => raise!(self, "found a malformed comment"),
-            Some(content) => Some(Event::Comment(content)),
+            Some(content) => {
+                let comment_content = &content[4..content.len() - 3];
+                Some(Event::Comment(comment_content))
+            }
         }
     }
 
