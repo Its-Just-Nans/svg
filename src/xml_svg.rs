@@ -6,6 +6,7 @@ use crate::{
     Node, Parser,
 };
 
+#[derive(Debug)]
 pub struct XMLSvg {
     inner: Vec<Box<dyn Node>>,
 }
@@ -27,7 +28,6 @@ impl XMLSvg {
                 Event::Tag(tag, typed, attributes) => {
                     let mut node = Element::new(tag);
                     node.get_attributes_mut().extend(attributes);
-                    println!("tag: {} {:#?}", tag, typed);
                     match typed {
                         Type::Start => {
                             stack.push(node);
@@ -48,7 +48,6 @@ impl XMLSvg {
                     }
                 }
                 Event::Comment(comment) => {
-                    println!("comment: {}", comment);
                     // remove 4 first chart and 3 last chart
                     let comment = &comment[4..comment.len() - 3];
                     if let Some(parent) = stack.last_mut() {
@@ -64,13 +63,11 @@ impl XMLSvg {
                     return Err(e);
                 }
                 Event::Declaration(declaration) => {
-                    println!("declaration: {}", declaration);
                     if let Some(parent) = stack.last_mut() {
                         parent.append(crate::node::Blob::new(declaration));
                     }
                 }
                 Event::Instruction(instruction) => {
-                    println!("instruction: {}", instruction);
                     if let Some(parent) = stack.last_mut() {
                         parent.append(crate::node::Blob::new(instruction));
                     }
@@ -115,8 +112,12 @@ mod tests {
 
     fn high_level_parsing() {
         let svg = include_str!("../tests/fixtures/benton.svg");
+        // replace line endings
         let svg = svg.replace("\r\n", "\n");
         let xml_svg = XMLSvg::from_string(&svg).unwrap();
+        println!("{:#?}", xml_svg);
+        // assert only the first 60 characters
+        // attributes are not in the same order
         assert_eq!(xml_svg.to_string()[..60], svg[..60]);
         assert_eq!(xml_svg.get_svg().unwrap().get_name(), "svg")
     }
