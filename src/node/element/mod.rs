@@ -133,6 +133,10 @@ impl Node for Element {
     fn get_children_mut(&mut self) -> Option<&mut Children> {
         Self::get_children_mut(self).into()
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 macro_rules! implement_nested(
@@ -183,6 +187,10 @@ macro_rules! implement_nested(
             #[inline]
             fn get_name(&self) -> &str {
                 self.$field_name.get_name()
+            }
+
+            fn as_any(&self) -> &dyn std::any::Any {
+                self
             }
 
             #[inline]

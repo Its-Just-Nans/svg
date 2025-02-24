@@ -82,13 +82,12 @@ impl XMLSvg {
         Err(Error::new((0, 0), "No root element found"))
     }
 
-    pub fn get_svg(&self) -> Option<&dyn Node> {
+    pub fn get_svg(&self) -> Option<&Element> {
         self.inner.iter().find_map(|node| {
             if node.get_name() == "svg" {
-                Some(node.as_ref())
-            } else {
-                None
+                return Some(node.as_any().downcast_ref::<Element>().unwrap());
             }
+            None
         })
     }
 }
@@ -106,7 +105,7 @@ impl fmt::Display for XMLSvg {
 
 #[cfg(test)]
 mod tests {
-    use crate::XMLSvg;
+    use crate::{node::element::Element, XMLSvg};
 
     #[test]
 
@@ -119,6 +118,8 @@ mod tests {
         // assert only the first 60 characters
         // attributes are not in the same order
         assert_eq!(xml_svg.to_string()[..60], svg[..60]);
-        assert_eq!(xml_svg.get_svg().unwrap().get_name(), "svg")
+        let svg: &Element = xml_svg.get_svg().unwrap();
+        assert_eq!(svg.get_name(), "svg");
+        assert_eq!(svg.get_children().len(), 4);
     }
 }

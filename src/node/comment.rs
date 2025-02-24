@@ -50,6 +50,10 @@ impl Node for Comment {
     fn get_name(&self) -> &str {
         "comment"
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 impl super::NodeDefaultHash for Comment {

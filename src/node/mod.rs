@@ -1,5 +1,6 @@
 //! The nodes.
 
+use std::any::Any;
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::fmt;
@@ -76,6 +77,7 @@ pub trait Node:
     fn is_bareable(&self) -> bool {
         false
     }
+    fn as_any(&self) -> &dyn Any;
 }
 
 #[doc(hidden)]

@@ -35,6 +35,9 @@ impl Node for Blob {
     fn get_name(&self) -> &str {
         "blob"
     }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 impl super::NodeDefaultHash for Blob {

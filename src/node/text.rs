@@ -40,6 +40,10 @@ impl Node for Text {
     fn is_bare(&self) -> bool {
         true
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 impl super::NodeDefaultHash for Text {
