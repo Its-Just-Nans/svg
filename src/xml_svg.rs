@@ -58,9 +58,6 @@ impl XMLSvg {
                         parent.append(crate::node::Text::new(text));
                     }
                 }
-                Event::Error(e) => {
-                    return Err(e);
-                }
                 Event::Declaration(declaration) => {
                     if let Some(parent) = stack.last_mut() {
                         parent.append(crate::node::Blob::new(declaration));
@@ -70,6 +67,10 @@ impl XMLSvg {
                     if let Some(parent) = stack.last_mut() {
                         parent.append(crate::node::Blob::new(instruction));
                     }
+                }
+                Event::Error(e) => {
+                    // return the error
+                    return Err(e);
                 }
             }
         }
